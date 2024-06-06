@@ -1,0 +1,290 @@
+#+TITLE: Tssc workshop setup guide
+#+AUTHOR: James Blair
+#+DATE: <2023-09-20 Wed 12:45>
+
+
+This document captures the end to end flow to setup an environment to run an instance of this trusted software supply chain workshop.
+
+
+* Pre-requisites
+
+The steps below assume you have already provisioned a Red Hat OpenShift 4.12+ cluster and have cluster admin credentials for that cluster. For my purposes I have a cluster already provisioned through the [[https://demo.redhat.com][Red Hat Demo System]].
+
+The steps below also rely on the ~oc~ openshift cli utilities, so ensure you have that installed as well and have logged into the cluster. If you don't have this installed already follow [[https://docs.openshift.com/container-platform/4.12/cli_reference/openshift_cli/getting-started-cli.html][this install documentation]].
+
+
+* Step 1 - Scale up worker nodes
+
+In order to run the workshop workloads successfully we need to ensure worker nodes of ~2xlarge~ type are available. The default ~xlarge~ nodes are not large enough to facilitate the workshop workloads.
+
+To tackle this we can edit the ~MachineSet~ custom resource for the worker machine set and update the ~spec.template.spec.providerSpec.value.instanceType~ field and ~spec.replicas~.
+
+#+begin_src bash :results silent
+cat << EOF | oc apply --filename -
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  namespace: openshift-machine-api
+  name: $(oc get machineset -n openshift-machine-api | grep worker | awk '{print $1}')
+spec:
+  replicas: 4
+  template:
+    spec:
+      providerSpec:
+        value:
+          instanceType: m5.2xlarge
+EOF
+#+end_src
+
+
+* Step 2 - Deploy advanced cluster security
+
+With our cluster now ready let's deploy [[https://www.redhat.com/en/technologies/cloud-computing/openshift/advanced-cluster-security-kubernetes][Red Hat Advanced Cluster Security]].
+
+
+** Create required namespaces
+
+Our first step is to create the two namespaces we will use to separate the acs cluster services from the acs central deployment.
+
+#+begin_src bash :results silent
+oc new-project acs-services
+oc new-project acs-central
+#+end_src
+
+
+** Install rhacs operator
+
+With namespaces created we can now create a ~Subscription~ for the rhacs operator which is equivalent to installing the operator through the web interface via clickops.
+
+#+begin_src bash :results silent
+cat << EOF | oc apply --filename -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: rhacs-operator
+  namespace: rhacs-operator
+spec:
+  channel: rhacs-3.74
+  installPlanApproval: Automatic
+  name: rhacs-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  startingCSV: rhacs-operator.v3.74.6
+EOF
+#+end_src
+
+
+** Create central instance
+
+The operator makes new custom resources available on our cluster. Let's create the ~Central~ resource now.
+
+#+begin_src bash :results silent
+cat << EOF | oc apply --filename -
+apiVersion: platform.stackrox.io/v1alpha1
+kind: Central
+metadata:
+  name: stackrox-central-services
+  namespace: acs-central
+spec:
+  central:
+    exposure:
+      loadBalancer:
+        enabled: false
+        port: 443
+      nodePort:
+        enabled: false
+      route:
+        enabled: true
+    db:
+      isEnabled: Default
+      persistence:
+        persistentVolumeClaim:
+          claimName: central-db
+    persistence:
+      persistentVolumeClaim:
+        claimName: stackrox-db
+  egress:
+    connectivityPolicy: Online
+  scanner:
+    analyzer:
+      scaling:
+        autoScaling: Enabled
+        maxReplicas: 5
+        minReplicas: 2
+        replicas: 3
+    scannerComponent: Enabled
+EOF
+#+end_src
+
+
+** Download cluster init bundle
+
+Once our ~Central~ instance has come up we can create a cluster-init bundle.  We can do this via the acs web interface.
+
+#+begin_src bash :results silent
+# Print login credentials
+echo "Login username: admin"
+echo "Login password: "$(oc get secret --namespace acs-central central-htpasswd --output jsonpath='{.data.password}' | base64 --decode)
+
+# Open the route in browser
+xdg-open "https://$(oc get route -n acs-central central --output jsonpath='{.spec.host}')/main/integrations/authProviders/clusterInitBundle/create"
+#+end_src
+
+Once the cluster init bundle has been generated, click to download the Kubernetes Secrets and apply them:
+
+#+begin_src bash :results silent
+oc apply --namespace acs-services --filename "<path-to-cluster-init-secrets>.yaml"
+#+end_src
+
+
+** Create the secured cluster
+
+Next we will define how acs will secure the cluster through the creation of a ~SecuredCluster~ resource.
+
+#+begin_src bash :results silent
+cat << EOF | oc apply --filename -
+apiVersion: platform.stackrox.io/v1alpha1
+kind: SecuredCluster
+metadata:
+  name: stackrox-secured-cluster-services
+  namespace: acs-services
+spec:
+  auditLogs:
+    collection: Auto
+  admissionControl:
+    listenOnUpdates: true
+    bypass: BreakGlassAnnotation
+    contactImageScanners: ScanIfMissing
+    listenOnCreates: true
+    timeoutSeconds: 20
+    listenOnEvents: true
+  scanner:
+    analyzer:
+      scaling:
+        autoScaling: Enabled
+        maxReplicas: 5
+        minReplicas: 2
+        replicas: 3
+    scannerComponent: AutoSense
+  perNode:
+    collector:
+      collection: EBPF
+      imageFlavor: Regular
+    taintToleration: TolerateTaints
+  clusterName: openshift-workshop
+  centralEndpoint: 'central-acs-central.apps.cluster1.sandbox930.opentlc.com:443'
+EOF
+#+end_src
+
+* Step 3 - Install openshift pipelines operator
+
+Install the OpenShift Pipelines operator for the workshop activities where participants will build pipelines via Tekton.
+
+#+begin_src bash :results silent
+cat << EOF | oc apply --filename -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: openshift-pipelines-operator
+  namespace: openshift-operators
+spec:
+  channel: latest
+  installPlanApproval: Automatic
+  name: openshift-pipelines-operator-rh
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+EOF
+#+end_src
+
+* Step 4 - Provision users and user namespaces
+
+We need to create a number of users for our workshop, which will authenticate via an [[https://docs.openshift.com/container-platform/4.14/authentication/identity_providers/configuring-htpasswd-identity-provider.html][OpenShift htpasswd auth provider]]. The example below creates a `htpasswd` file for 35 users:
+
+#+begin_src bash :results silent
+PASSWORD=ghye4311
+htpasswd -c -B -b users.htpasswd user1 ghye4311 && \
+for i in $(seq 2 35); do htpasswd -B -b users.htpasswd user$i $PASSWORD; done
+#+end_src
+
+One the users are created, you can create a secret in OpenShift holding the `htpasswd` file:
+
+#+begin_src bash :results silent
+oc create secret generic htpass-secret --from-file=htpasswd=users.htpasswd -n openshift-config 
+#+end_src
+
+You then need to create an identity provider. This provider has already been created, and assumes that the `users.htpasswd` file already exists in the local directory:
+
+#+begin_src bash :results silent
+$ oc apply -f idp.yaml
+#+end_src
+
+Create a cluster role for workshop users:
+#+begin_src bash :results silent
+$ oc create -f clusterrole.yaml
+#+end_src
+
+Additionally, for each user in our workshop we need to provision a ~Namespace~. Each namespace needs to include a helper terminal pod that workshop participants will use for each exercise.
+
+Adjust the number in the script below to the desired user count.
+
+#+begin_src bash :results silent
+for user in $(seq 1 35); do
+    oc new-project user"${user}"
+    oc create sa tssc --namespace user"${user}"
+    oc adm policy add-scc-to-user privileged system:serviceaccount:user"${user}":tssc
+    oc apply --filename deployment.yaml --namespace user"${user}"
+    oc create -f role.yaml -n user"${user}"
+    oc create -f pipelines-role.yaml -n openshift-pipelines
+    oc adm policy add-role-to-user --namespace openshift-pipelines --role-namespace openshift-pipelines pipeline-secrets-reader system:serviceaccount:user"${user}":tssc
+    oc adm policy add-role-to-user --namespace user"${user}" --role-namespace user"${user}" workshopsa system:serviceaccount:user"${user}":tssc
+    oc adm policy add-cluster-role-to-user workshop-scc-admin system:serviceaccount:user"${user}":tssc
+    oc adm policy add-role-to-user --namespace user"${user}" admin user"${user}"
+done
+#+end_src
+
+* Step 5 - Expose the internal registry
+
+Finally, we need to expose the OpenShift internal registry. In this example I've used a Let's Encrypt certificate to expose the registry at ~registry.blueradish.net~, and you'll find this referenced in the workshop content, though you can create your own registry URL and update this.
+
+Firstly, create the certificates via Certbot. You'll need an AWS IAM role created for Certbot:
+
+#+begin_src bash :results silent
+$ cat ~/.aws/credentials
+[certbot]
+aws_access_key_id=...
+aws_secret_access_key=...
+
+$ virtualenv certbot-venv
+$ source ~/certbot-venv/bin/activate
+$ pip3 install certbot certbot_dns_route53==0.22.2
+
+$ AWS_PROFILE=certbot certbot certonly --logs-dir /home/user/certbot/log --config-dir /home/user/certbot/config --work-dir /home/user/certbot/work -d registry.blueradish.net --dns-route53 -m your-email --agree-tos --non-interactive
+#+end_src
+
+Create a secret from the certbot certificate:
+
+#+begin_src bash :results silent
+$ oc create secret tls public-route-tls \
+    -n openshift-image-registry \
+	  --cert /home/user/certbot/config/live/registry.blueradish.net/fullchain.pem \
+	  --key  /home/user/certbot/config/live/registry.blueradish.net/privkey.pem
+#+end_src
+
+Add the secret and hostname to the registry route:
+
+#+begin_src bash :results silent
+$ oc edit configs.imageregistry.operator.openshift.io/cluster
+...
+spec:
+  routes:
+    - name: public-routes
+      hostname: registry.blueradish.net
+      secretName: public-route-tls
+#+end_src
+
+Create a CNAME record in Route53 pointing to ~registry.blueradish.net~ and the OpenShift router canonical hostname, and test out the registry auth:
+
+#+begin_src bash :results silent
+podman login -u kubeadmin -p $(oc whoami -t) registry.blueradish.net
+Login succeeded!
+#+end_src
