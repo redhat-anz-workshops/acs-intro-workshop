@@ -1,140 +1,149 @@
 ---
-title: Detecting unauthorized behaviours at runtime with RHACS
+title: Detecting unauthorized application behaviour at runtime with RHACS
 exercise: 4
 date: '2024-06-04'
-tags: ['sigstore','cosign','openshift','acs','chains']
+tags: ['runtime','unauthorized','openshift','rhacs','ebpf']
 draft: false
 authors: ['default']
 summary: "In this exercise we'll identify and block unauthorized behaviours in container applications at runtime."
 ---
-Throughout this workshop we've looked at how to build signing and verification into the software supply-chain. We've looked at using the capabilities provided by the Sigstore project to cryptographically sign container images, and verify signatures and build actions using the Rekor transparency log. We've also seen how to build container signing into software pipelines with Tekton Chains.
+Throughout this workshop we've looked at 'PwnKit', a vulnerability in the PolKit package potentially allowing privileged escalation. So far we've looked at:
 
-Digital signing and verification is an important supply-chain security control, and so is runtime monitoring. Runtime anomaly detection and response allows us to identify supply-chain compromise from the output of a build-chain - identifying how an application behaves, and detecting and responding to anopmalous activity.
+- Analyzing container images for CVEs, and identifying vulnerable OpenShift workloads
+- Running a campaign for PwnKit-vulnerable container images and deployments
+- Blocking container images vulnerable to PwnKit from being deployed to OpenShift
 
-In this lab we'll identify anomalous behaviours in container applications at runtime that could be indicative of supply-chain compromise. We'll do this using the extended berkeley packet filter (eBPF)-based runtime monitoring supported by Red Hat Advanced Cluster Security for Kubernetes (RHACS).
+One of the critical requirements to exploit PwnKit is that users can interactively run `pkexec` from a container. In this lab, we'll look at detecting and preventing `pkexec` usage from within containers, mitigating PwnKit exploitation.
 
-## Cleanup existing policies
-Log in to ACS Central and select `Platform configuration -> Policy management`. Firstly we need to disable the policy from the last exercise. 
+## Red Hat Advanced Cluster Security for Kubernetes (RHACS) runtime security
 
-Select the `Cosign verification - userX` policy. Select `Actions` and select `Disable policy`.
+Red Hat Advanced Cluster Security for Kubernetes (RHACS) uses an extended Berkeley Packet Filter (eBPF) probe to detect processes running in containers, and also detect container network traffic flows. The eBPF probe runs on every Red Hat Enterprise Linux CoreOS (RHCOS) node of an OpenShift cluster.
+
+ebpf...
+
+## Detecting pkexec in containers
+Our goal in this lab is to detect and prevent the `pkexec` binary being used in containers. To do this, we can implement a runtime policy in Red Hat Advanced Cluster Security for Kubernetes (RHACS).
+
+Navigate to 'Platform Configuration' -> 'Policy management'. This time we're going to import a policy into RHACS.
+
+Select the `Import policy` button to bring up the import dialog. 
 
 <Zoom>
 ![runtime1](/static/images/exercise4/runtime1.png)
 </Zoom>
 
-## Clone an existing policy
-Navigate back to the list of policies and perform a search for `Policy: crypto`. You should see policies related to `Cryptomining` shown.
-
 <Zoom>
 ![runtime2](/static/images/exercise4/runtime2.png)
 </Zoom>
 
-Select the menu next to the `Cryptocurrency Mining Process Execution` policy and select `Clone policy`. You'll be shown a new copy of the policy.
+In the text-box, paste the following policy, replacing `%%replace-me%%` with your username:
+```json
+{
+    "policies": [
+        {
+            "name": "Polkit Execution Detected - %%replace-me%%",
+            "description": "Detects execution of the pkexec binary in a container",
+            "rationale": "Polkit can be abused by attackers to elevate privileges within a container.",
+            "remediation": "Use your package manager's \"remove\" command to remove polkit packages from the image build for production containers.",
+            "disabled": false,
+            "categories": [
+                "Security Best Practices"
+            ],
+            "lifecycleStages": [
+                "RUNTIME"
+            ],
+            "eventSource": "DEPLOYMENT_EVENT",
+            "exclusions": [],
+            "scope": [],
+            "severity": "MEDIUM_SEVERITY",
+            "enforcementActions": [
+                "KILL_POD_ENFORCEMENT",
+                "FAIL_KUBE_REQUEST_ENFORCEMENT"
+            ],
+            "notifiers": [],
+            "SORTName": "",
+            "SORTLifecycleStage": "",
+            "SORTEnforcement": false,
+            "policyVersion": "1.1",
+            "policySections": [
+                {
+                    "sectionName": "",
+                    "policyGroups": [
+                        {
+                            "fieldName": "Process Name",
+                            "booleanOperator": "OR",
+                            "negate": false,
+                            "values": [
+                                {
+                                    "value": "pkexec"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "mitreAttackVectors": [],
+            "criteriaLocked": false,
+            "mitreVectorsLocked": false,
+            "isDefault": false
+        }
+    ]
+}
+```
+Select 'Begin import'.
 
 <Zoom>
 ![runtime3](/static/images/exercise4/runtime3.png)
 </Zoom>
 
+Once the policy is imported you can search for 'Policy: polkit' to see the new policy is enabled at runtime.
+
 <Zoom>
 ![runtime4](/static/images/exercise4/runtime4.png)
 </Zoom>
 
-Name the new policy `Cryptocurrency Mining Process Execution - userX`. Select `Next`, and under `Policy behavior` ensure that `Runtime` is selected. Change the `Response method` from `Inform` to `Inform and Enforce`, and click the switch for `Enforce on Runtime`.
+## Trying out the policy
 
-<Zoom>
-![enforce1](/static/images/exercise4/enforce1.png)
-</Zoom>
-
-Select `Next` until you reach `Policy scope`. Select `Add Inclusion Scope` and create an inclusive scope for your individual project.
+Now that this policy is enabled and enforcing, let's try it out. Login to OpenShift and find the `backend` deployment in the `devops` namespace.
 
 <Zoom>
 ![runtime5](/static/images/exercise4/runtime5.png)
 </Zoom>
 
-Select `Review policy` and `Save`. You should now see the new policy created. If it's disabled, enable the policy.
+Find the pod associated with this deployment and open a terminal session.
 
 <Zoom>
 ![runtime6](/static/images/exercise4/runtime6.png)
 </Zoom>
 
-## Test out the new runtime policy
-Navigate back to OpenShift and your individual user project. Select the `+` button to create a new deployment in the current namespace (shown in yellow).
+Try and run `pkexec` from the container. You should observe that the pod begins terminating:
 
-<Zoom>
-![ocp1](/static/images/exercise4/ocp1.png)
-</Zoom>
-
-Enter the following YAML to create a new deployment:
-```yaml
-apiVersion : apps/v1
-kind: Deployment
-metadata:
-  name: demo-app
-  labels:
-    app: demo-app
-    app.kubernetes.io/component: demo-app
-    app.kubernetes.io/instance: demo-app
-    app.kubernetes.io/name: demo-app
-    app.kubernetes.io/part-of: demo-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: demo-app
-  template:
-    metadata:
-      labels:
-        app: demo-app
-    spec:
-      containers:
-        - name: demo-app
-          image: quay.io/smileyfritz/demo-app:v0.1.1
-```
 <Zoom>
 ![runtime7](/static/images/exercise4/runtime7.png)
 </Zoom>
 
-Select `Create` and observe that this time the container starts deploying.
+Navigate back to Red Hat Advanced Cluster Security for Kubernetes (RHACS) and select 'Violations'. Here you can see a new violation has been created for the `PolKit Execution Detected` policy.
 
 <Zoom>
-![deploy1](/static/images/exercise4/deploy1.png)
+![runtime8](/static/images/exercise4/runtime8.png)
 </Zoom>
 
-If you select `Pods` you'll see the pod name cycling through, but the container never deploys successfully.
+If you dig into this violation you can see the activity that was generated in the container. In this case, the binary `/usr/bin/pkexec` was executed with no arguments.
 
 <Zoom>
-![deploy2](/static/images/exercise4/deploy2.png)
+![runtime9](/static/images/exercise4/runtime9.png)
 </Zoom>
 
-If you select `Events` for the deployment you will see the reason - this container image contains a cryptominer!
+The violation also shows the enforcement activity that took place. In this case, Red Hat Advanced Cluster Security for Kubernetes (RHACS) detected `pkexec` usage and immediately destroyed the running container, mitigating any attacker-controlled processes.
 
 <Zoom>
-![events1](/static/images/exercise4/events1.png)
+![runtime10](/static/images/exercise4/runtime10.png)
 </Zoom>
 
-Navigate back to ACS and select `Violations`. You should see a policy violation for `Cryptocurrency Mining Process Execution - userX`.
+You can also see the policy that triggered this violation. In this case, it was the `PolKit Execution Detected` policy.
 
 <Zoom>
-![violation1](/static/images/exercise4/violation1.png)
-</Zoom>
-
-Selecting the violation shows the process that was detected inside the container at runtime.
-
-<Zoom>
-![violation2](/static/images/exercise4/violation2.png)
-</Zoom>
-
-If you select `Enforcement` you can see the action that was taken. In this case, the pod was immediately killed as soon as the cryptominer was detected.
-
-<Zoom>
-![violation3](/static/images/exercise4/violation3.png)
-</Zoom>
-
-## Cleanup
-Navigate back to OpenShift and your user project. Delete the `demo-app` deployment in your namespace.
-
-<Zoom>
-![delete1](/static/images/exercise4/delete1.png)
+![runtime11](/static/images/exercise4/runtime11.png)
 </Zoom>
 
 ## Stretch goal

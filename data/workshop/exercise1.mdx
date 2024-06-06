@@ -5,7 +5,7 @@ date: '2024-06-01'
 tags: ['rhacs','cve','pwnkit','openshift','acs','containers']
 draft: false
 authors: ['default']
-summary: "In this first exercise we'll sign a container image using Sigstore."
+summary: "In this first exercise we'll analyze container images for vulnerabilities."
 ---
 In this first exercise we'll identify critical vulnerabilities in an OpenShift workload. This is important, because vulnerabilities can be present in either the underlying 'base' container image, or in the application code itself. Red Hat Advanced Cluster Security for Kubernetes (RHACS) supports identifying vulnerabilities in both.
 
@@ -29,10 +29,30 @@ In this first exercise we'll identify critical vulnerabilities in an OpenShift w
 
 
 ## Identifying critical vulnerabilities
-Navigate to RHACS and login with your OpenShift username and credentials:
+Navigate to RHACS and login with your OpenShift username and credentials, making sure you select `workshop_users` when prompted.
 
 <Zoom>
-![login](/static/images/login.png)
+![login1](/static/images/exercise1/acs_login1.png)
+</Zoom>
+
+<Zoom>
+![login2](/static/images/exercise1/acs_login2.png)
+</Zoom>
+
+<Zoom>
+![login3](/static/images/exercise1/acs_login3.png)
+</Zoom>
+
+Once you've logged in you'll be prompted to authorize access for RHACS. Simply select 'Allow selected permissions'
+
+<Zoom>
+![login4](/static/images/exercise1/acs_login4.png)
+</Zoom>
+
+You'll be shown the Red Hat Advanced Cluster Security for Kubernetes (RHACS) dashboard once you've logged in.
+
+<Zoom>
+![login5](/static/images/exercise1/acs_login5.png)
 </Zoom>
 
 Navigate to **Vulnerability Management (1.0)**, and select 'images' in the top-right menu.
@@ -71,7 +91,14 @@ There's a few things we can see here:
 - The image has 10 CVEs rated as critical, 36 rated as important, 29 rated as moderate and 200 rated as low. We're mostly interested in the critical and important CVEs.
 - The top riskiest components and the number of CVEs identified are also shown.
 
-## Tooltip -> stale CVE data
+<details>
+    <summary><strong>What does 'stale CVE data' mean?</strong></summary>
+    <p>Red Hat Advanced Cluster Security for Kubernetes (RHACS) uses CVE data from various sources. The latest Scanner v4 uses OSV.dev as a comprehensive source of CVE feeds and data.</p>
+
+    <p>The image used here is built on Debian 9. Debian publishes security advisories at https://www.debian.org/security/#DSAS, which are then made available via NIST NVD, OSV.dev and other sources. While there is historical CVE data available for Debian 9, there are no new security advisories being created. Hence RHACS shows a 'stale' CVE data message.</p>
+
+    <p>This also highlights the importance of selecting a base image with security errata available. If you don't have security errata and CVE information available for the base image, then it can be difficult to track CVEs through the application lifecycle.</p>
+</details>
 
 If you scroll down the page you'll be shown the list of all CVEs present in this container image. Let's filter this list for a specific CVE - CVE-2021-4034.
 
@@ -79,10 +106,12 @@ If you scroll down the page you'll be shown the list of all CVEs present in this
 ![cve6](/static/images/exercise1/cve6.png)
 </Zoom>
 
-### A little about PwnKit
-CVE-2021-4034 refers to a privilege escalation vulnerability in the Polkit package. 
+<details>
+    <summary><strong>A little more about PwnKit</strong></summary>
+    <p>CVE-2021-4034 refers to a privilege escalation vulnerability in the Polkit package.</p>
+</details>
 
-Let's take a closer look at the component inside the container image that's vulnerable. Click `CVE-2021-4034` and you'll be shown a summary of the CVE.
+Click `CVE-2021-4034` and you'll be shown a summary of the CVE.
 
 <Zoom>
 ![cve7](/static/images/exercise1/cve7.png)

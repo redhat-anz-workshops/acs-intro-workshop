@@ -16,7 +16,7 @@ To do this we'll use the Red Hat Advanced Cluster Security for Kubernetes (RHACS
 To begin, we need to create a policy for CVE-2021-4034. Navigate to 'Platform Configuration' -> 'Policy management'. This will show all policies that you get out-of-the-box with Red Hat Advanced Cluster Security for Kubernetes (RHACS).
 
 <Zoom>
-![report1](/static/images/exercise1/report1.png)
+![report1](/static/images/exercise2/report1.png)
 </Zoom>
 
 There's a few important things to highlight:
@@ -33,13 +33,13 @@ We can also see that each policy has a lifecycle. This determines how the policy
 We need to create a new policy, so select 'Create Policy'.
 
 <Zoom>
-![report2](/static/images/exercise1/report2.png)
+![report2](/static/images/exercise2/report2.png)
 </Zoom>
 
 This will open up the 'Create Policy' form. 
 
 <Zoom>
-![report3](/static/images/exercise1/report3.png)
+![report3](/static/images/exercise2/report3.png)
 </Zoom>
 
 Enter the following data for the policy:
@@ -53,47 +53,47 @@ Enter the following data for the policy:
 - **MITRE ATT&CK**: Privilege Escalation (TA0004) -> Exploitation for Privilege Escalation (T1068).
 
 <Zoom>
-![report4](/static/images/exercise1/report4.png)
+![report4](/static/images/exercise2/report4.png)
 </Zoom>
 
 <Zoom>
-![report5](/static/images/exercise1/report5.png)
+![report5](/static/images/exercise2/report5.png)
 </Zoom>
 
 Click 'Next'. The next page defines the policy behavior. Select 'Build' and 'Deploy', and leave the 'Response method' set to 'Inform'.
 
 <Zoom>
-![report6](/static/images/exercise1/report6.png)
+![report6](/static/images/exercise2/report6.png)
 </Zoom>
 
 Select 'Next', and this next page defines the policy criteria.
 
 <Zoom>
-![report7](/static/images/exercise1/report7.png)
+![report7](/static/images/exercise2/report7.png)
 </Zoom>
 
 Expand 'image contents' on the right-hand side to see additional criteria you can use in the policy.
 
 <Zoom>
-![report8](/static/images/exercise1/report8.png)
+![report8](/static/images/exercise2/report8.png)
 </Zoom>
 
 Locate the `CVE` field and drag it to the 'Policy section 1' field on the left. Update the CVE identifier for `CVE-2021-4034`.
 
 <Zoom>
-![report9](/static/images/exercise1/report9.png)
+![report9](/static/images/exercise2/report9.png)
 </Zoom>
 
-Select 'Next'. This screen allows us to limit the policy scope to certain clusters or namespaces, or exlcude particular clusters from a policy. We're not going to make any changes here, so just click 'Next'.
+Select 'Next'. This screen allows us to limit the policy scope to certain clusters or namespaces, or exclude particular clusters from a policy. We're not going to make any changes here, so just click 'Next'.
 
 <Zoom>
-![report10](/static/images/exercise1/report10.png)
+![report10](/static/images/exercise2/report10.png)
 </Zoom>
 
 Finally you can review the policy. This screen will also show any existing deployments on the platform that fail the policy. When you're happy, click 'Save'.
 
 <Zoom>
-![report11](/static/images/exercise1/report11.png)
+![report11](/static/images/exercise2/report11.png)
 </Zoom>
 
 Now that this policy is active we can use it to generate data for a CVE campaign. While we could use the built-in CVE reports, using the RESTful API for this specific campaign allows us to customise the data formatting, which can be very useful when we're pushing data between different platforms.
@@ -182,19 +182,19 @@ done
 Before we run this script we need to create an API token to provide access to Red Hat Advanced Cluster Security for Kubernetes (RHACS). Navigate to 'Platform Configuration' -> 'Integrations' in the RHACS console, and scroll down to 'StackRox API token'.
 
 <Zoom>
-![report12](/static/images/exercise1/report12.png)
+![report12](/static/images/exercise2/report12.png)
 </Zoom>
 
 Select 'API token' and then 'Generate token'
 
 <Zoom>
-![report13](/static/images/exercise1/report13.png)
+![report13](/static/images/exercise2/report13.png)
 </Zoom>
 
 Enter your username for the token name and give the token a role of 'Analyst'.
 
 <Zoom>
-![report14](/static/images/exercise1/report14.png)
+![report14](/static/images/exercise2/report14.png)
 </Zoom>
 
 Copy the token from the previous page and set it inside your terminal:
