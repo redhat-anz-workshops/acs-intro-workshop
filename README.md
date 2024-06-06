@@ -1,4 +1,4 @@
-# Trusted Software Supply-Chain Workshop
+# RHACS intro workshop
 
 Testing this content
 ```
