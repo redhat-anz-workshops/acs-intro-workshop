@@ -9,8 +9,8 @@ let basePath = '/'
 
 if (isGithubActions) {
   const repo = process.env.GITHUB_REPOSITORY.replace(/.*?\//, '')  
-  assetPrefix = `/${repo}/`
-  basePath = `/${repo}`
+  assetPrefix = `/acs-intro-workshop/`
+  basePath = `/acs-intro-workshop`
 }
 
 module.exports = withBundleAnalyzer({
