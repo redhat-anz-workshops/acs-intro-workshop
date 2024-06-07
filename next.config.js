@@ -24,7 +24,7 @@ module.exports = withBundleAnalyzer({
   experimental: { esmExternals: true },
   images: {
     loader: 'imgix',
-    path: 'workshop-936810110',
+    path: 'https://workshop-936810110.imgix.net',
   },
   webpack: (config, { dev, isServer }) => {
     config.module.rules.push({
@@ -43,5 +43,5 @@ module.exports = withBundleAnalyzer({
 
     return config
   },
-  output: "standalone"
+  output: "export"
 })
