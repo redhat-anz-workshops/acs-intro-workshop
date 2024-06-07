@@ -2,27 +2,31 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
 
+const isGithubActions = process.env.GITHUB_ACTIONS || false
+
+let assetPrefix = ''
+let basePath = '/'
+
+if (isGithubActions) {
+  const repo = process.env.GITHUB_REPOSITORY.replace(/.*?\//, '')  
+  assetPrefix = `/${repo}/`
+  basePath = `/${repo}`
+}
+
 module.exports = withBundleAnalyzer({
+  assetPrefix: assetPrefix,
+  basePath: basePath,
   reactStrictMode: true,
   pageExtensions: ['js', 'jsx', 'md', 'mdx'],
   eslint: {
     dirs: ['pages', 'components', 'lib', 'layouts', 'scripts'],
   },
   experimental: { esmExternals: true },
+  images: {
+    loader: 'imgix',
+    path: 'workshop-936810110.imgix.net',
+  },
   webpack: (config, { dev, isServer }) => {
-    config.module.rules.push({
-      test: /\.(png|jpe?g|gif|mp4)$/i,
-      use: [
-        {
-          loader: 'file-loader',
-          options: {
-            publicPath: '/_next',
-            name: 'static/media/[name].[hash].[ext]',
-          },
-        },
-      ],
-    })
-
     config.module.rules.push({
       test: /\.svg$/,
       use: ['@svgr/webpack'],
