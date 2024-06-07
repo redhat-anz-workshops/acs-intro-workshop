@@ -1,0 +1,1 @@
+{"pageProps":{"posts":[{"title":"Blocking vulnerable workloads from OpenShift","exercise":3,"date":"2024-06-03T00:00:00.000Z","tags":["admission","control","openshift","rhacs","cve"],"draft":false,"authors":["default"],"summary":"In the third exercise we'll block vulnerable container images from OpenShift","slug":"exercise3"}],"tag":"admission"},"__N_SSG":true}

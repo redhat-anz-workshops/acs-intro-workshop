@@ -1,0 +1,24 @@
+
+  <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+      <title>Red Hat Advanced Cluster Security for Kubernetes Workshop</title>
+      <link>https://tssc.blueradish.net/workshop</link>
+      <description>Red Hat Advanced Cluster Security for Kubernetes Workshop</description>
+      <language>en-us</language>
+      <managingEditor>sboulden@redhat.com (Red Hat)</managingEditor>
+      <webMaster>sboulden@redhat.com (Red Hat)</webMaster>
+      <lastBuildDate>Mon, 03 Jun 2024 00:00:00 GMT</lastBuildDate>
+      <atom:link href="https://tssc.blueradish.net/tags/control/feed.xml" rel="self" type="application/rss+xml"/>
+      
+  <item>
+    <guid>https://tssc.blueradish.net/workshop/exercise3</guid>
+    <title>Blocking vulnerable workloads from OpenShift</title>
+    <link>https://tssc.blueradish.net/workshop/exercise3</link>
+    <description>In the third exercise we&#39;ll block vulnerable container images from OpenShift</description>
+    <pubDate>Mon, 03 Jun 2024 00:00:00 GMT</pubDate>
+    <author>sboulden@redhat.com (Red Hat)</author>
+    <category>admission</category><category>control</category><category>openshift</category><category>rhacs</category><category>cve</category>
+  </item>
+
+    </channel>
+  </rss>

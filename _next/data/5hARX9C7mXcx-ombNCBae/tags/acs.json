@@ -1,0 +1,1 @@
+{"pageProps":{"posts":[{"title":"Vulnerability analysis with RHACS","exercise":1,"date":"2024-06-01T00:00:00.000Z","tags":["rhacs","cve","pwnkit","openshift","acs","containers"],"draft":false,"authors":["default"],"summary":"In this first exercise we'll analyze container images for vulnerabilities.","slug":"exercise1"}],"tag":"acs"},"__N_SSG":true}
