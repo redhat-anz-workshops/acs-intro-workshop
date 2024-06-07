@@ -32,55 +32,55 @@ In this first exercise we'll identify critical vulnerabilities in an OpenShift w
 Navigate to RHACS and login with your OpenShift username and credentials, making sure you select `workshop_users` when prompted.
 
 <Zoom>
-![login1](/exercise1/acs_login1.png)
+![login1](/static/images/exercise1/acs_login1.png)
 </Zoom>
 
 <Zoom>
-![login2](/exercise1/acs_login2.png)
+![login2](/static/images/exercise1/acs_login2.png)
 </Zoom>
 
 <Zoom>
-![login3](/exercise1/acs_login3.png)
+![login3](/static/images/exercise1/acs_login3.png)
 </Zoom>
 
 Once you've logged in you'll be prompted to authorize access for RHACS. Simply select 'Allow selected permissions'
 
 <Zoom>
-![login4](/exercise1/acs_login4.png)
+![login4](/static/images/exercise1/acs_login4.png)
 </Zoom>
 
 You'll be shown the Red Hat Advanced Cluster Security for Kubernetes (RHACS) dashboard once you've logged in.
 
 <Zoom>
-![login5](/exercise1/acs_login5.png)
+![login5](/static/images/exercise1/acs_login5.png)
 </Zoom>
 
 Navigate to **Vulnerability Management (1.0)**, and select 'images' in the top-right menu.
 
 <Zoom>
-![cve1](/exercise1/cve1.png)
+![cve1](/static/images/exercise1/cve1.png)
 </Zoom>
 
 When RHACS is first-connected to an OpenShift cluster it will automatically perform a CVE scan of all images deployed to the cluster. You can see these shown in this screen - the 'Image Status -> Active' indicates that the image is associated with an active deployment.
 
 <Zoom>
-![cve2](/exercise1/cve2.png)
+![cve2](/static/images/exercise1/cve2.png)
 </Zoom>
 
 Select the `quay.io/the-worst-containers/pwnkit:v0.6` image. If you can't see it on the first page, you can search for the image in the 'Filter images' bar.
 
 <Zoom>
-![cve3](/exercise1/cve3.png)
+![cve3](/static/images/exercise1/cve3.png)
 </Zoom>
 
 <Zoom>
-![cve4](/exercise1/cve4.png)
+![cve4](/static/images/exercise1/cve4.png)
 </Zoom>
 
 Once you select the image you'll be shown a screen showing a summary of the image.
 
 <Zoom>
-![cve5](/exercise1/cve5.png)
+![cve5](/static/images/exercise1/cve5.png)
 </Zoom>
 
 There's a few things we can see here:
@@ -103,7 +103,7 @@ There's a few things we can see here:
 If you scroll down the page you'll be shown the list of all CVEs present in this container image. Let's filter this list for a specific CVE - CVE-2021-4034.
 
 <Zoom>
-![cve6](/exercise1/cve6.png)
+![cve6](/static/images/exercise1/cve6.png)
 </Zoom>
 
 <details>
@@ -114,7 +114,7 @@ If you scroll down the page you'll be shown the list of all CVEs present in this
 Click `CVE-2021-4034` and you'll be shown a summary of the CVE.
 
 <Zoom>
-![cve7](/exercise1/cve7.png)
+![cve7](/static/images/exercise1/cve7.png)
 </Zoom>
 
 The summary contains some other important data about this CVE:
@@ -125,19 +125,19 @@ The summary contains some other important data about this CVE:
 You can also see a link the image component on the right-hand side of the screen.
 
 <Zoom>
-![cve8](/exercise1/cve8.png)
+![cve8](/static/images/exercise1/cve8.png)
 </Zoom>
 
 Clicking this link will show the vulnerable component inside the container image. In this case, it's the `policykit-1` package installed into the container image. This screen also shows the package that fixes the CVE.
 
 <Zoom>
-![cve9](/exercise1/cve9.png)
+![cve9](/static/images/exercise1/cve9.png)
 </Zoom>
 
 You can also dig further into this component and see any other CVEs that it is exposed to.
 
 <Zoom>
-![cve10](/exercise1/cve10.png)
+![cve10](/static/images/exercise1/cve10.png)
 </Zoom>
 
 ## Summary
