@@ -17,7 +17,15 @@ Red Hat Advanced Cluster Security for Kubernetes (RHACS) supports a couple of wa
 
 * **Admission control** Red Hat Advanced Cluster Security for Kubernetes (RHACS) pushes down a Kubernetes admission controller to secured OpenShift clusters. This means we can make decisions about allowing / blocking vulnerable workloads before they are accepted to the cluster.
 
-## tooltip - Kubernetes admission control
+<details>
+    <summary><strong>What is Kubernetes admission control?</strong></summary>
+    <p>An admission controller is a piece of code that intercepts requests to the Kubernetes API server prior to persistence of the object, but after the request is authenticated and authorized.</p>
+
+    <p>Admission controllers limit requests to create, delete, modify objects. Admission controllers can also block custom verbs, such as a request connect to a Pod via an API server proxy. Admission controllers do not (and cannot) block requests to read (get, watch or list) objects.</p>
+
+    <p>Red Hat Advanced Cluster Security for Kubernetes (RHACS) deploys a Kubernetes admission controller to secured clusters that can be used to validate applications for vulnerabilities or misconfiguration before being deployed to the cluster.</p>
+</details>
+
 
 ## Using the RHACS admission controller
 
