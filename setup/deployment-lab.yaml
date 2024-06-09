@@ -1,0 +1,29 @@
+---
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: lab
+  labels:
+    app: lab
+    app.kubernetes.io/component: lab
+    app.kubernetes.io/instance: lab
+    app.kubernetes.io/name: lab
+    app.kubernetes.io/part-of: lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lab
+  template:
+    metadata:
+      labels:
+        app: lab
+    spec:
+      containers:
+      - name: backend
+        image: quay.io/smileyfritz/acs-intro-cli:v0.6
+        securityContext:
+          capabilities:
+            drop:
+             - ALL
+        command: ["sleep", "infinity"]

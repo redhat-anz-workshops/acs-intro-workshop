@@ -1,0 +1,32 @@
+---
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: devops
+  labels:
+    app: backend
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/instance: backend
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      serviceAccountName: default
+      serviceAccount: default  
+      containers:
+      - name: backend
+        image: quay.io/the-worst-containers/pwnkit:v0.6
+        securityContext:
+          capabilities:
+            drop:
+             - ALL
+        command: ["sleep", "infinity"]

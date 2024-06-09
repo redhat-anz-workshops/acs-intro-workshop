@@ -1,0 +1,13 @@
+FROM registry.access.redhat.com/ubi9/ubi:latest
+
+# install utilities
+RUN yum install -y jq vim nano
+
+# install OpenShift client
+RUN curl -O -L "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz" && \
+    tar -xsf openshift-client-linux.tar.gz -C /usr/local/bin/ oc && \
+    rm openshift-client-linux.tar.gz
+
+COPY pwnkit-report.sh .
+
+CMD ["/bin/bash","-c","sleep infinity"]
