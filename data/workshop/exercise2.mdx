@@ -98,9 +98,16 @@ Finally you can review the policy. This screen will also show any existing deplo
 
 Now that this policy is active we can use it to generate data for a CVE campaign. While we could use the built-in CVE reports, using the RESTful API for this specific campaign allows us to customise the data formatting, which can be very useful when we're pushing data between different platforms.
 
-Locate the `workshop` container inside your project namespace. Inside you'll find a script `pwnkit-campaign.sh`. 
+Login to OpenShift and Locate the `lab` container inside your project namespace. Inside you'll find a script `/ex2/pwnkit-report.sh`. 
+
+<Zoom>
+![script1](/static/images/exercise2/script1.png)
+</Zoom>
 
 Let's take a look at this file:
+```bash
+cat /ex2/pwnkit-report.sh
+```
 
 ```bash
 #! /bin/bash
@@ -179,6 +186,11 @@ for deployment_id in $(echo "${res}" | jq -r .alerts[].deployment.id); do
   done
 done
 ```
+Update the report to reflect your report name. If you've used the standard `PwnKit campaign %%user%%` you can se `sed` to replace the report name. Note that you can use 'ctrl-shift-v' to paste into the container terminal:
+```
+sed -i s/user1/user2/g pwnkit-report.sh
+```
+
 Before we run this script we need to create an API token to provide access to Red Hat Advanced Cluster Security for Kubernetes (RHACS). Navigate to 'Platform Configuration' -> 'Integrations' in the RHACS console, and scroll down to 'StackRox API token'.
 
 <Zoom>
@@ -232,4 +244,4 @@ res="$(curl_central "v1/alerts?query=Policy%3APwnKit%20Campaign%20user1")"
 ```
 
 ## Stretch goals
-Can you create a similar policy / report for Log4Shell? Is there an existing policy that can help?
+Can you create a similar report for Log4Shell? Is there an existing policy that can help?

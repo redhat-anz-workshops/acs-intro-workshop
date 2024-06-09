@@ -17,9 +17,13 @@ One of the critical requirements to exploit PwnKit is that users can interactive
 
 ## Red Hat Advanced Cluster Security for Kubernetes (RHACS) runtime security
 
-Red Hat Advanced Cluster Security for Kubernetes (RHACS) uses an extended Berkeley Packet Filter (eBPF) probe to detect processes running in containers, and also detect container network traffic flows. The eBPF probe runs on every Red Hat Enterprise Linux CoreOS (RHCOS) node of an OpenShift cluster.
+Historically, the operating system has always been an ideal place to implement observability, security, and networking functionality due to the kernel’s privileged ability to oversee and control the entire system. At the same time, an operating system kernel is hard to evolve due to its central role and high requirement towards stability and security. The rate of innovation at the operating system level has thus traditionally been lower compared to functionality implemented outside of the operating system.
 
-ebpf...
+The extended Berkeley Packet Filter (eBPF) changes this formula fundamentally. It allows sandboxed programs to run within the operating system, which means that application developers can run eBPF programs to add additional capabilities to the operating system at runtime. The operating system then guarantees safety and execution efficiency as if natively compiled with the aid of a Just-In-Time (JIT) compiler and verification engine. This has led to a wave of eBPF-based projects covering a wide array of use cases, including next-generation networking, observability, and security functionality.
+
+Today, eBPF is used extensively to drive a wide variety of use cases: Providing high-performance networking and load-balancing in modern data centers and cloud native environments, extracting fine-grained security observability data at low overhead, helping application developers trace applications, providing insights for performance troubleshooting, preventive application and container runtime security enforcement, and much more. The possibilities are endless, and the innovation that eBPF is unlocking has only just begun.
+
+Red Hat Advanced Cluster Security for Kubernetes (RHACS) uses an eBPF probe to detect processes running in containers, and also detect container network traffic flows. The eBPF probe runs on every Red Hat Enterprise Linux CoreOS (RHCOS) node of an OpenShift cluster.
 
 ## Detecting pkexec in containers
 Our goal in this lab is to detect and prevent the `pkexec` binary being used in containers. To do this, we can implement a runtime policy in Red Hat Advanced Cluster Security for Kubernetes (RHACS).
@@ -146,8 +150,8 @@ You can also see the policy that triggered this violation. In this case, it was 
 ![runtime11](/static/images/exercise4/runtime11.png)
 </Zoom>
 
-## Stretch goal
-Can you lock-down the application, so that *nothing* run except for the `httpd` process?
-- How can you identify the process baseline for an application?
+## Stretch goals
+Can you lock-down the application, so that *nothing* run except for the `/bin/sleep` process?
+- How can you identify the process baseline for an application? (Hint: take a look at the `Risk` tab in Red Hat Advanced Cluster Security for Kubernetes (RHACS))
 - How can you **lock** the process baseline for a deployment?
-- How do you notify security teams / take action when anomalous processes are detected inside running containers? 
+- How do you notify security teams / take action when anomalous processes are detected inside running containers? (Hint: is there an existing policy for `Unauthorized process` execution?)
