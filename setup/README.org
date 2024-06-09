@@ -182,6 +182,10 @@ We need a vulnerable workload to support CVE analysis.
 #+begin_src bash :results silent
 oc new-project devops
 oc create -f deployment-pwnkit.yml
+
+oc new-project app-deploy
+oc adm policy add-scc-to-user privileged system:serviceaccount:app-deploy:default
+oc create -f deployment-log4shell.yml
 #+end_src
 
 * Step 4 - Provision users and user namespaces
@@ -216,6 +220,7 @@ for user in $(seq 1 35); do
     oc apply --filename deployment-lab.yaml --namespace user"${user}"
     oc adm policy add-role-to-user --namespace user"${user}" admin user"${user}"
     oc adm policy add-role-to-user --namespace devops admin user"${user}"
+    oc adm policy add-role-to-user --namespace app-deploy admin user"${user}"
 done
 #+end_src
 
