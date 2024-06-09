@@ -7,7 +7,7 @@ draft: false
 authors: ['default']
 summary: "In this first exercise we'll analyze container images for vulnerabilities."
 ---
-In this first exercise we'll identify critical vulnerabilities in an OpenShift workload. This is important, because vulnerabilities can be present in either the underlying 'base' container image, or in the application code itself. Red Hat Advanced Cluster Security for Kubernetes (RHACS) supports identifying vulnerabilities in both.
+In this first exercise we'll identify vulnerabilities in an OpenShift application. Container applications can contain vulnerabilities in both the container base image (Red Hat Universal Base Image, Debian base images, Ubuntu, etc), or the application code packaged inside the container image. Red Hat Advanced Cluster Security for Kubernetes (RHACS) supports identifying vulnerabilities in both, and you can see the supported base images and programming languages for RHACS vulnerability analysis in the tables below.
 
 ### Supported base images
 | Distribution | Version |
@@ -22,14 +22,18 @@ In this first exercise we'll identify critical vulnerabilities in an OpenShift w
 | SUSE | SLES 11, 12, 15; openSUSE Leap 42.3, 15.0, 15.1; SUSE Linux | 
 | Ubuntu | ubuntu:14.04, ubuntu:16.04, ubuntu:18.04, ubuntu:20.04, ubuntu:21.04, ubuntu:21.10, ubuntu:22.04, ubuntu:22.10, ubuntu:23.04, ubuntu:23.10. The following vulnerability sources are not updated by the vendor: ubuntu:12.04, ubuntu:12.10, ubuntu:13.04, ubuntu:14.10, ubuntu:15.04, ubuntu::15.10, ubuntu::16.10, ubuntu:17.04, ubuntu:17.10, ubuntu:18.10, ubuntu:19.04, ubuntu:19.10, ubuntu:20.1 |
 
-### Supported language runtimes and frameworks
-| foo | bar |
+### Supported programming languages
+| Programming language | Artifact |
 | --- | --- |
-| baz | bim |
+| Go | Binaries: The standard library version used to build the binary is analyzed. If the binaries are built with module support (go.mod), then the dependencies are also analyzed. |
+| Java | JAR / WAR / EAR |
+| JavaScript | Node.js / npm package.json |
+| Python | egg and wheel formats |
+| Ruby | gem |
 
 
 ## Identifying critical vulnerabilities
-Navigate to RHACS and login with your OpenShift username and credentials, making sure you select `workshop_users` when prompted.
+Let's explore vulnerabilities inside container images. Navigate to Red Hat Advanced Cluster Security for Kubernetes (RHACS) (the URL is in the [etherpad](https://etherpad.wikimedia.org/p/rhacs-workshop-june-2024)) and login with your OpenShift username and credentials, making sure you select `workshop_users` when prompted.
 
 <Zoom>
 ![login1](/static/images/exercise1/acs_login1.png)
