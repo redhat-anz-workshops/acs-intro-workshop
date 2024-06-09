@@ -8,6 +8,11 @@ RUN curl -O -L "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp
     tar -xsf openshift-client-linux.tar.gz -C /usr/local/bin/ oc && \
     rm openshift-client-linux.tar.gz
 
-COPY pwnkit-report.sh .
+# create dir for workshop
+RUN mkdir /ex2 && \
+    chgrp -R 0 /ex2 && \
+    chmod -R g=u /ex2 
+
+COPY pwnkit-report.sh /ex2
 
 CMD ["/bin/bash","-c","sleep infinity"]

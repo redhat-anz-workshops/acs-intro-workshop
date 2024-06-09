@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: quay.io/smileyfritz/acs-intro-cli:v0.6
+        image: quay.io/smileyfritz/acs-intro-cli:v0.7
         securityContext:
           capabilities:
             drop:
