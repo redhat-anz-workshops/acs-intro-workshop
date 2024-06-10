@@ -243,5 +243,8 @@ If this happens, it's likely that the reporting script is looking for a differen
 res="$(curl_central "v1/alerts?query=Policy%3APwnKit%20Campaign%20user1")"
 ```
 
+## Summary
+In this lab we looked at creating reports for specific CVEs, using the Red Hat Advanced Cluster Security for Kubernetes (RHACS) RESTful API to extract data and present is as CSV-formatted files. This provides complete control over the report format and data, and can be exported to Splunk, Sentinel or other platforms for further analysis.
+
 ## Stretch goals
 Can you create a similar report for Log4Shell? Is there an existing policy that can help?

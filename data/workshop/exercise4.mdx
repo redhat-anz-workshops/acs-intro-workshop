@@ -150,6 +150,11 @@ You can also see the policy that triggered this violation. In this case, it was 
 ![runtime11](/static/images/exercise4/runtime11.png)
 </Zoom>
 
+## Summary
+In this exercise we looked at identifying unauthorized process activity at runtime. Specifically, we used the Red Hat Advanced Cluster Security for Kubernetes (RHACS) eBPF probe to identify `pkexec` activity at runtime, and immediately respond and create violations for this activity.
+
+Ideally we could also block workloads containing the `pkexec` binary or `polkit` package from OpenShift, using the RHACS admission controller as we saw in exercise 3. This might not be possible in all scenarios though - you might have third-party applications that contain the polkit package, or legacy workloads that can't be modified. In these situations, Red Hat Advanced Cluster Security for Kubernetes (RHACS) provides the flexibility to allow these workloads to be deployed, while constraining process activity / network traffic.
+
 ## Stretch goals
 Can you lock-down the application, so that *nothing* run except for the `/bin/sleep` process?
 - How can you identify the process baseline for an application? (Hint: take a look at the `Risk` tab in Red Hat Advanced Cluster Security for Kubernetes (RHACS))
