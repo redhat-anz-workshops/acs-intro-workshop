@@ -1,24 +1,24 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: log4shell-app
+  name: frontend
   namespace: app-deploy
   labels:
-    app: log4shell-app
-    app.kubernetes.io/component: log4shell-app
-    app.kubernetes.io/instance: log4shell-app
+    app: frontend
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/instance: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      deployment: log4shell-app
+      deployment: frontend
   template:
     metadata:
       labels:
-        deployment: log4shell-app
+        deployment: frontend
     spec:
       containers:
-        - name: log4shell-app
+        - name: frontend
           image: quay.io/smileyfritz/log4shell-app:v0.5
           securityContext:
             capabilities:
