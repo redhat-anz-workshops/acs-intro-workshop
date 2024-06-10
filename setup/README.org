@@ -1,9 +1,9 @@
-#+TITLE: Tssc workshop setup guide
-#+AUTHOR: James Blair
-#+DATE: <2023-09-20 Wed 12:45>
+#+TITLE: Red Hat Advanced Cluster Security for Kubernetes (RHACS) hands-on workshop setup guide
+#+AUTHOR: Shane Boulden
+#+DATE: <2024-06-10 Mon 15:45>
 
 
-This document captures the end to end flow to setup an environment to run an instance of this trusted software supply chain workshop.
+This document captures the end to end flow to setup an environment to run an instance of this Red Hat Advanced Cluster Security for Kubernetes (RHACS) hands-on workshop.
 
 
 * Pre-requisites
