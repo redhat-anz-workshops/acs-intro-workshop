@@ -26,7 +26,7 @@ module.exports = withBundleAnalyzer({
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "your-subdomain.imgix.net",
+        hostname: "workshop-936810110.imgix.net",
       },
     ],
     loader: "custom",
