@@ -25,6 +25,7 @@ module.exports = withBundleAnalyzer({
   images: {
     loader: 'imgix',
     path: 'https://workshop-936810110.imgix.net',
+    unoptimized: true
   },
   webpack: (config, { dev, isServer }) => {
     config.module.rules.push({
