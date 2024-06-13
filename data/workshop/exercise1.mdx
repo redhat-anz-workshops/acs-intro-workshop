@@ -61,6 +61,17 @@ You'll be shown the Red Hat Advanced Cluster Security for Kubernetes (RHACS) das
 
 Navigate to **Vulnerability Management (1.0)**, and select 'images' in the top-right menu.
 
+<details>
+    <summary><strong>Why is there Vulnerability Management 1.0 and 2.0?</strong></summary>
+    <p>Red Hat Advanced Cluster Security for Kubernetes (RHACS) introduces several improvements to vulnerability reporting and management, which are contained in the '2.0' menu</p>
+
+    <p>Vulnerability Management 2.0 includes a new reporting capability, including the ability to customize email templates that are used when reports are sent.</p>
+
+    <p>Vulnerability Management 2.0 also includes the `watched` menu. Watched images are still scanned for vulnerabilities even when not in use by an active deployment.</p>
+
+    <p>We're not looking to generate reports or manage `watched` images in this exercise, so we will use the Vulnerability Management 1.0 component.</p>
+</details>
+
 <Zoom>
 ![cve1](/static/images/exercise1/cve1.png)
 </Zoom>
@@ -92,7 +103,6 @@ There's a few things we can see here:
 - The container image was created 30/05/2024, and was last scanned very recently. 
 - The container image was scanned using the built-in Red Hat Advanced Cluster Security for Kubernetes (RHACS) CVE scanner, based on the open source Clair project.
 - The image base OS is Debian 9. Debian 9 no longer produces new CVE data, and RHACS shows a message that the CVE data is now stale. 
-- The image has 10 CVEs rated as critical, 36 rated as important, 29 rated as moderate and 200 rated as low. We're mostly interested in the critical and important CVEs.
 - The top riskiest components and the number of CVEs identified are also shown.
 
 <details>
@@ -113,7 +123,7 @@ If you scroll down the page you'll be shown the list of all CVEs present in this
 ## Digging into PwnKit
 
 <p>CVE-2021-4034 refers to a privilege escalation vulnerability in the Polkit package.</p>
-<p>Polkit’s pkexec program is a command-line program that allows local users on a Red Hat Enterprise Linux system to execute commands as another user identity (UID) based on policy definitions. In order to be able to change that UID, the pkexec program is installed with the Set User ID (SUID) bit set and the file owned by the superuser, or root. This program contained a memory safety error in the parsing of the command line. Because it runs with root privileges (required to change UID), it carried the risk that exploitable flaws in the program could allow running arbitrary code with elevated privileges and/ or bypassing the policy restrictions.</p>
+<p>Polkit’s pkexec program is a command-line program that allows local users on a Linux system to execute commands as another user identity (UID) based on policy definitions. In order to be able to change that UID, the pkexec program is installed with the Set User ID (SUID) bit set and the file owned by the superuser, or root. This program contained a memory safety error in the parsing of the command line. Because it runs with root privileges (required to change UID), it carried the risk that exploitable flaws in the program could allow running arbitrary code with elevated privileges and/ or bypassing the policy restrictions.</p>
 
 <p>The `execve` system call in the Linux kernel accepts the path name of the file to be loaded into memory and executed as an additional argument passed to the program via the command line. Tradition and standard practice dictate that the first command-line argument (argv[0] in the C API) to be the name of the program being executed. However, this is not a requirement of the kernel and is thus not enforced. Pkexec’s command-line parsing code expected the command-line array (argv) to be well- formed; however, if pkexec was run with a NULL pointer value for argv, an out-of-bounds memory read occurred. While this memory read primitive alone would not usually be enough to take control of a program, the same memory location where the out-of-bound read occurs is later used to write data. As the stack memory following “argv” is almost always “env” (the program environment variables passed to execve), this allowed the parsing code to be abused in a way that allowed the rewriting of environment variables. The ability to rewrite environment variables allows unsafe values (such as LD_PRELOAD) that would normally not be permitted for a program running with SUID privileges. This would allow for arbitrary code execution with root privileges.</p>
 

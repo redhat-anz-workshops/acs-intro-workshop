@@ -1,5 +1,5 @@
 ---
-title: Creating CVE campaigns with RHACS
+title: Creating customised CVE reports with RHACS
 exercise: 2
 date: '2024-06-02'
 tags: ['rhacs','cve','campaigns','pwnkit','openshift','security']
@@ -9,7 +9,7 @@ summary: "In the second exercise we'll generate and export data for a CVE campai
 ---
 Ok, we've seen now how to dig into a specific image and identify CVEs that is exposed to. Importantly, RHACS scans all images deployed to the platform - we know that any new deployments created will be scanned, and the results made available to RHACS analysts.
 
-We identified a single image vulnerable to PwnKit (CVE-2021-4034). Now, let's assume that we want to run a campaign for CVE-2021-4034. We want to identify every workload or image that is vulnerable to CVE-2021-4034 and export this data into a separate platform. 
+We identified a single image vulnerable to PwnKit (CVE-2021-4034). Now, let's assume that we want to build a report for CVE-2021-4034. Our reporting tools / platforms expect data in a CSV format, and we want to identify every workload or image that is vulnerable to CVE-2021-4034 and export this data. 
 
 To do this we'll use the Red Hat Advanced Cluster Security for Kubernetes (RHACS) RESTful application programming interface (API). This allows us to export data from RHACS using the API, and customise this before sending the data to another platform (like Splunk).
 
@@ -27,8 +27,8 @@ There's a few important things to highlight:
 
 We can also see that each policy has a lifecycle. This determines how the policy is applied:
 - 'Build' policies impact the `roxctl` CLI, which can be included with CI/CD pipelines to scan container images as a software pipeline stage. 
-- 'Deploy' policies invoke the Red Hat Advanced Cluster Security for Kubernetes (RHACS) admission controller. This allows us to block / notify when certain CVEs or misconfiguration are detected (we'll explore this in exercise 2).
-- 'Runtime' policies apply to container process / network traffic detected for container workloads by the RHACS eBPF program.
+- 'Deploy' policies invoke the Red Hat Advanced Cluster Security for Kubernetes (RHACS) admission controller. This allows us to block / notify when certain CVEs or misconfiguration are detected (we'll explore this in exercise 3).
+- 'Runtime' policies apply to container process / network traffic detected for container workloads by the RHACS eBPF program (we'll explore runtime policies and [eBPF](https://ebpf.io/what-is-ebpf/) in exercise 4).
 
 We need to create a new policy, so select 'Create Policy'.
 
@@ -50,7 +50,7 @@ Enter the following data for the policy:
 - **Description**: The polkit package is designed to define and handle policies that allow unprivileged processes to communicate with privileged processes on a Linux system. Pkexec, part of polkit, is a tool that allows the user to execute commands as another user according to the polkit policy definitions using the setuid feature. The vulnerability found in pkexec allows an unprivileged local attacker to escalate privileges, bypassing any authentication and policies due to incorrect handling of the process’s argument vector. 
 - **Rationale**: Container images vulnerable to PwnKit are potentially exposed to privilege escalation techniques.
 - **Guidance**: Use the package manager for your base image to update polkit packages in container images to versions that are no longer vulnerable.
-- **MITRE ATT&CK**: Privilege Escalation (TA0004) -> Exploitation for Privilege Escalation (T1068).
+- **[MITRE ATT&CK](https://attack.mitre.org/)**: Privilege Escalation (TA0004) -> Exploitation for Privilege Escalation (T1068).
 
 <Zoom>
 ![report4](/static/images/exercise2/report4.png)
@@ -96,12 +96,12 @@ Finally you can review the policy. This screen will also show any existing deplo
 ![report11](/static/images/exercise2/report11.png)
 </Zoom>
 
-Now that this policy is active we can use it to generate data for a CVE campaign. While we could use the built-in CVE reports, using the RESTful API for this specific campaign allows us to customise the data formatting, which can be very useful when we're pushing data between different platforms.
+Now that this policy is active we can use it to generate data for a CVE campaign. While we could use the built-in CVE reports, using the RESTful API for this specific campaign allows us to customise the data formatting, which can be very useful when we're pushing data between different platforms. Here, for example, we would like to export the data into a CSV format.
 
-Login to OpenShift and Locate the `lab` container inside your project namespace. Inside you'll find a script `/ex2/pwnkit-report.sh`. 
+Login to OpenShift and Locate the `lab` container inside your project namespace. Inside you'll find a script `/ex2/pwnkit-report.sh`.
 
 <Zoom>
-![script1](/static/images/exercise2/script1.png)
+![access1](/static/images/exercise2/ocp-access.gif)
 </Zoom>
 
 Let's take a look at this file:
@@ -205,6 +205,15 @@ Select 'API token' and then 'Generate token'
 
 Enter your username for the token name and give the token a role of 'Analyst'.
 
+<details>
+    <summary><strong>What's the 'Analyst' role?</strong></summary>
+    <p>Red Hat Advanced Cluster Security for Kubernetes (RHACS) uses role-based access controls (RBAC) to limit the data and actions a user can perform.</p>
+
+    <p>The 'Analyst' role is targeted for a user who cannot make any changes, but can view everything. It provides a good fit for customer reporting here because we can use it to provide read-only access for all resources.</p>
+
+    <p>You can find the complete list of RHACS default roles in the [docs](https://docs.openshift.com/acs/4.4/operating/manage-user-access/manage-role-based-access-control-3630.html#rbac-system-roles-3630_manage-role-based-access-control).</p>
+</details>
+
 <Zoom>
 ![report14](/static/images/exercise2/report14.png)
 </Zoom>
@@ -213,9 +222,8 @@ Copy the token from the previous page and set it inside your terminal:
 ```
 export ROX_API_TOKEN=eyJhb...
 ```
-Set the ROX_ENDPOINT value to your cluster URL, and run the report.
+Run the report.
 ```
-export ROX_ENDPOINT=central-acs-central.apps.cluster1.sandbox2237.opentlc.com
 ./pwnkit-report.sh pwnkit.csv
 ```
 
@@ -226,7 +234,7 @@ $ cat pwnkit.csv
 "backend","quay.io/the-worst-containers/pwnkit:v0.6","CVE-2021-4034",7.8,"A local privilege escalation vulnerability was found on polkit's pkexec utility. The pkexec application is a setuid tool designed to allow unprivileged users to run commands as privileged users according predefined policies. The current version of pkexec doesn't handle the calling parameters count correctly and ends trying to execute environment variables as commands. An attacker can leverage this by crafting environment variables in such a way it'll induce pkexec to execute arbitrary code. When successfully executed the attack can cause a local privilege escalation given unprivileged users administrative rights on the target machine.","IMPORTANT_VULNERABILITY_SEVERITY","policykit-1","0.105-18+deb9u1","0.105-18+deb9u2",6,"RUN apt-get update && apt-get install -y libpolkit-gobject-1-0=0.105-18+deb9u1     libpolkit-agent-1-0=0.105-18+deb9u1     libpolkit-backend-1-0=0.105-18+deb9u1    policykit-1=0.105-18+deb9u1"
 ```
 Let's explore this data a little more:
-- There is a deployment deployed on the cluster named `backend` that is vulnerable to PwnKit (CVE-2021-4034)
+- There is a deployment active on the cluster named `backend` that is vulnerable to PwnKit (CVE-2021-4034)
 - The vulnerable container image associated with this deployment is `quay.io/the-worst-containers/pwnkit:v0.6`
 - The vulnerability is introduced in the 0.105-18+deb9u1 version of the `policykit-1` package, and is fixed in the 0.105-18+debu9u2 package.
 - Specifically the vulnerability was introduced with the lines shown at the end of the file.
