@@ -22,7 +22,7 @@
 
   <item>
     <guid>https://tssc.blueradish.net/workshop/exercise2</guid>
-    <title>Creating CVE campaigns with RHACS</title>
+    <title>Creating customised CVE reports with RHACS</title>
     <link>https://tssc.blueradish.net/workshop/exercise2</link>
     <description>In the second exercise we&#39;ll generate and export data for a CVE campaign, using the RHACS RESTful API.</description>
     <pubDate>Sun, 02 Jun 2024 00:00:00 GMT</pubDate>
