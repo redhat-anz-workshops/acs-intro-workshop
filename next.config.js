@@ -30,7 +30,7 @@ module.exports = withBundleAnalyzer({
       },
     ],
     loader: "custom",
-    customLoader: "loader.js",
+    loaderFile: "loader.js",
   },
   webpack: (config, { dev, isServer }) => {
     config.module.rules.push({
