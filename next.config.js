@@ -23,9 +23,14 @@ module.exports = withBundleAnalyzer({
   },
   experimental: { esmExternals: true },
   images: {
-    loader: 'imgix',
-    path: 'https://workshop-936810110.imgix.net',
-    unoptimized: true
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "your-subdomain.imgix.net",
+      },
+    ],
+    loader: "custom",
+    customLoader: "loader.js",
   },
   webpack: (config, { dev, isServer }) => {
     config.module.rules.push({
