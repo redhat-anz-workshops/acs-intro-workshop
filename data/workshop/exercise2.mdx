@@ -186,6 +186,12 @@ for deployment_id in $(echo "${res}" | jq -r .alerts[].deployment.id); do
   done
 done
 ```
+<details>
+    <summary><strong>Where do I find more examples like this?</strong></summary>
+    <p>This example comes from the [StackRox community contributions](https://github.com/stackrox/contributions) repository.</p>
+    <p>This repository contains example policies, reporting scripts, CI integrations, and other helpful examples showing how you can extend Red Hat Advanced Cluster Security for Kubernetes (RHACS).</p>
+</details>
+
 Update the report to reflect your report name. If you've used the standard `PwnKit campaign %%user%%` you can se `sed` to replace the report name. Note that you can use 'ctrl-shift-v' to paste into the container terminal:
 ```
 sed -i s/user1/user2/g pwnkit-report.sh
