@@ -100,15 +100,22 @@ Select 'Begin import'.
 ![runtime3](/static/images/exercise4/runtime3.png)
 </Zoom>
 
-Once the policy is imported you can search for 'Policy: polkit' to see the new policy is enabled at runtime.
+Once the policy is imported you can search for 'Policy: polkit' to see the new policy. Select the menu next to the new policy and select 'Edit policy'
 
 <Zoom>
 ![runtime4](/static/images/exercise4/runtime4.png)
 </Zoom>
 
+### Adding an inclusive scope
+We only want this policy to apply to a single project, so select 'Policy scope' and 'Add inclusion scope'. Select the `openshift` cluster from the drop-down and enter your project name.
+
+<Zoom>
+![policy1](/static/images/exercise4/policy1.png)
+</Zoom>
+
 ## Trying out the policy
 
-Now that this policy is enabled and enforcing, let's try it out. Login to OpenShift and find the `backend` deployment in the `devops` namespace.
+Now that this policy is enabled and enforcing, let's try it out. Login to OpenShift and find the `lab` deployment in your individual namespace (e.g. `user1`).
 
 <Zoom>
 ![runtime5](/static/images/exercise4/runtime5.png)
