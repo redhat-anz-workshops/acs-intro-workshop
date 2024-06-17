@@ -176,4 +176,26 @@ This was a quick introduction to Red Hat Advanced Cluster Security for Kubernete
 In the next exercise, we'll look at creating a campaign for a specific CVE and extracting data from RHACS.
 
 ## Stretch goals
-- Can you find a Log4Shell-vulnerable image running on the cluster? Which namespace is this running in?
+Can you find a Log4Shell-vulnerable image running on the cluster? Which namespace is this running in?
+
+<details>
+    <summary><strong>Solution</strong></summary>
+    <p>Log4Shell is associated with a number of CVE identifiers, notably CVE-2021-44228. If you search this CVE identifier in the Vulnerability Management (1.0) page you will see a single image. Note that this is listed as 'Active', indicating that is currently deployed on the cluster.</p>
+    
+    <Zoom>
+    ![sgoal1](/static/images/exercise1/sgoal1.png)
+    </Zoom>
+
+    <p>Select the image and then the `1 Deployment` button on the right, to show the matching deployments.</p>
+
+    <Zoom>
+    ![sgoal2](/static/images/exercise1/sgoal2.png)
+    </Zoom>
+
+    <p>This view indicates that there is a Log4Shell-vulnerable workload running in the `app-deploy` namespace.</p>
+
+    <Zoom>
+    ![sgoal3](/static/images/exercise1/sgoal3.png)
+    </Zoom>
+
+</details>
