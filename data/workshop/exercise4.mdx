@@ -167,3 +167,65 @@ Can you lock-down the application, so that *nothing* run except for the `/bin/sl
 - How can you identify the process baseline for an application? (Hint: take a look at the `Risk` tab in Red Hat Advanced Cluster Security for Kubernetes (RHACS))
 - How can you **lock** the process baseline for a deployment?
 - How do you notify security teams / take action when anomalous processes are detected inside running containers? (Hint: is there an existing policy for `Unauthorized process` execution?)
+
+<details>
+    <summary><strong>Solution</strong></summary>
+    <p>Red Hat Advanced Cluster Security for Kubernetes (RHACS) supports building a process baseline for each deployment on the cluster, and then locking this baseline.</p>
+    
+    <p>Navigate to the `Risk` tab in Red Hat Advanced Cluster Security for Kubernetes (RHACS). This shows a prioritised view of the most risky deployments.</p>
+
+    <Zoom>
+    ![sgoal41](/static/images/exercise4/sgoal41.png)
+    </Zoom>
+
+    <p>Find the `lab` deployment inside your namespace and select it. On the right, you'll see a 'Process Discovery' tab open up.</p>
+
+    <Zoom>
+    ![sgoal42](/static/images/exercise2/sgoal42.png)
+    </Zoom>
+
+    <p>Select the `lock` icon in the 'Spec Container Baselines' section and use the `-` button to drop everything out of the baseline except for `/usr/bin/sleep`.</p>
+
+    <Zoom>
+    ![sgoal43](/static/images/exercise4/sgoal43.png)
+    </Zoom>
+
+    <p>The process baseline for the container is now locked. Let's check that there is a policy to take action when anomalous processes are found.</p>
+
+    <p>Navigate to 'Policy management' in Red Hat Advanced Cluster Security for Kubernetes (RHACS) and search for `Policy: Unauthorized process`.</p>
+
+    <Zoom>
+    ![sgoal44](/static/images/exercise4/sgoal44.png)
+    </Zoom>
+
+    <p>Taking a look at this policy shows that it is a runtime policy designed to inform on any unexpected processes executing inside a container on the cluster, and is currently enabled.</p>
+
+    <Zoom>
+    ![sgoal45](/static/images/exercise4/sgoal45.png)
+    </Zoom>
+
+    <Zoom>
+    ![sgoal46](/static/images/exercise4/sgoal46.png)
+    </Zoom>
+
+    Navigate back to OpenShift and find the `lab` pod running in your namespace. Access a terminal session and run a few commands.
+
+    <Zoom>
+    ![sgoal47](/static/images/exercise4/sgoal47.png)
+    </Zoom>
+
+    <Zoom>
+    ![sgoal48](/static/images/exercise4/sgoal48.png)
+    </Zoom>
+
+    You should now be able to see that there is a new violation created in the RHACS 'Violations' view showing the activity that you ran in the `lab` pod.
+
+    <Zoom>
+    ![sgoal49](/static/images/exercise4/sgoal49.png)
+    </Zoom>
+
+    <Zoom>
+    ![sgoal410](/static/images/exercise4/sgoal410.png)
+    </Zoom>
+
+</details>
