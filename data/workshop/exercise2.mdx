@@ -262,3 +262,44 @@ In this lab we looked at creating reports for specific CVEs, using the Red Hat A
 
 ## Stretch goals
 Can you create a similar report for Log4Shell? Is there an existing policy that can help?
+
+<details>
+    <summary><strong>Solution</strong></summary>
+    <p>Red Hat Advanced Cluster Security for Kubernetes (RHACS) has a built-in policy for Log4Shell detection. You can find this by searching for `Policy: Log4Shell` in the RHACS policy management view.</p>
+    
+    <Zoom>
+    ![sgoal21](/static/images/exercise2/sgoal21.png)
+    </Zoom>
+
+    <p>You can modify the existing report to instead use this Log4Shell policy. `vim` and `nano` are provided in the `lab` pod to assist you to modify the report.</p>
+
+    <p>Firstly, access a terminal session for the `lab` pod and copy the report to a new file.</p>
+    <Zoom>
+    ![sgoal22](/static/images/exercise2/sgoal22.png)
+    </Zoom>
+
+    <p>Use one of the available editors to update the following line in the report to use the `Log4Shell` policy:</p>
+    ```
+    # Collect all alerts
+    res="$(curl_central "v1/alerts?query=Policy%3ALog4Shell%3A%20log4j%20Remote%20Code%20Execution%20vulnerability")"
+    ```
+    <p>Update the two CSV formatting sections with the Log4Shell CVE identifier:</p>
+    ```
+    # Format the CSV correctly
+    if [[ "${VERSION}" == "v1" ]]; then
+      echo "${image_res}" | jq -r 'try (.metadata.v1.layers as $layers | .scan.components | sort_by(.layerIndex, .name) | .[]? | . as $component | select(.vulns != null) | .vulns[] | select(.fixedBy != null) |select(.cve == "CVE-2021-44228") | [ env.deployment_name, env.image_name, .cve, .cvss, .summary, .severity, $component.name, $component.version, .fixedBy, $component.layerIndex, ($layers[$component.layerIndex // 0].instruction + " " +$layers[$component.layerIndex // 0].value)]) | @csv' >> "${output_file}"
+    else
+      echo "${image_res}" | jq -r 'try (.metadata.v1.layers as $layers | .scan.components | sort_by(.layerIndex, .name) | .[]? | . as $component | select(.vulns != null) | .vulns[] | select(.fixedBy != null) | select(.cve == "CVE-2021-44228") | [ env.clusterName, env.clusterId, env.namespace, env.namespaceId, env.deployment_name, env.image_name, .cve, .cvss, .summary, .severity, $component.name, $component.version, .fixedBy, $component.layerIndex, ($layers[$component.layerIndex // 0].instruction + " " +$layers[$component.layerIndex // 0].value)]) | @csv' >> "${output_file}"
+    ```
+    <p>Run the new script to generate a CSV file.</p>
+    ```
+    $ cd ex2/
+    $ ./log4shell-report.sh log4shell.csv
+    ```
+    Verify that you have a vulnerable deployment named `frontend` listed in the output.
+
+    <Zoom>
+    ![sgoal23](/static/images/exercise2/sgoal23.png)
+    </Zoom>
+
+</details>
